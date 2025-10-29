@@ -1,10 +1,14 @@
+import os
 import logging
 import google.generativeai as genai
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
-TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
-GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+
+if not TELEGRAM_BOT_TOKEN or not GEMINI_API_KEY:
+    raise ValueError("Please set TELEGRAM_BOT_TOKEN and GEMINI_API_KEY environment variables")
 
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
@@ -18,19 +22,13 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('Hello! I am AiM, your AI assistant. How can I help you today?')
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    help_text = """
-Available commands:
-/start - Start the bot
-/help - Show help
-"""
-    await update.message.reply_text(help_text)
+    await update.message.reply_text('Just send me any message and I will respond to you!')
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
     
     try:
-        prompt = f"Respond naturally as AiM AI assistant: {user_message}"
-        response = model.generate_content(prompt)
+        response = model.generate_content(user_message)
         
         if response.text:
             if len(response.text) > 4096:
