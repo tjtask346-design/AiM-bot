@@ -1,10 +1,11 @@
+import os
 import logging
 import google.generativeai as genai
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
-TELEGRAM_BOT_TOKEN = "7935579410:AAFW0jXimZJAP8159oB1K3g_VKOieH1MXWc"
-GEMINI_API_KEY = "AIzaSyChmo0ZnnPBi6YZMGqxszB-XotQu54nmzY"
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
@@ -29,8 +30,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
     
     try:
-        prompt = f"Respond naturally as AiM AI assistant: {user_message}"
-        response = model.generate_content(prompt)
+        response = model.generate_content(user_message)
         
         if response.text:
             if len(response.text) > 4096:
@@ -57,4 +57,4 @@ if __name__ == '__main__':
     app.add_error_handler(error_handler)
     
     print("Bot is running...")
-    app.run_polling(poll_interval=3)
+    app.run_polling()
